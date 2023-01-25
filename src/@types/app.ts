@@ -1,4 +1,4 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, Request, response, Response } from "express";
 
 const app: Application = express();
 const port: number = 3000;
@@ -18,6 +18,31 @@ interface iProduct {
   name: string;
   quantity: string;
 }
+
+app.get("/purchaseList", (request: Request, response: Response) => {
+  try {
+    return response.status(201).send(productList);
+  } catch (error) {
+    return response.send("Algo deu errado");
+  }
+});
+
+app.get("/purchaseList/:id", (request, response) => {
+  const paramsId: number = parseInt(request.params.id);
+  console.log(paramsId);
+
+  const product = productList.find((product) => {
+    if (product.id === paramsId) {
+      return product;
+    } else {
+      return response.status(404).send({
+        message: `List with Id '${paramsId}' does not exist`,
+      });
+    }
+  });
+
+  return response.status(200).send(product);
+});
 
 app.post("/purchaseList/create", (request: Request, response: Response) => {
   try {
