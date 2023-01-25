@@ -1,29 +1,40 @@
-import express, { Application, Request, response, Response } from "express";
+import express, { Application, Request, Response } from "express";
+import { iProductList, iProduct } from "./types";
 
 const app: Application = express();
 const port: number = 3000;
 
 app.use(express.json());
 
-const productList: iProductList[] = [];
+let globalProductListDatabase: Array<iProductList> = [];
 let idCount: number = 1;
 
-interface iProductList {
-  id: number;
-  listName: string;
-  data: iProduct[];
-}
-
-interface iProduct {
-  name: string;
-  quantity: string;
-}
-
-app.get("/purchaseList", (request: Request, response: Response) => {
+// CREATE
+app.post("/purchaseList/create", (request: Request, response: Response) => {
   try {
-    return response.status(201).send(productList);
+    const productListBody = request.body;
+
+    const newProductList: iProductList = {
+      id: idCount,
+      listName: productListBody.listName,
+      data: productListBody.data,
+    };
+
+    globalProductListDatabase.push(newProductList);
+    idCount++;
+
+    return response.status(201).send(newProductList);
   } catch (error) {
-    return response.send("Algo deu errado");
+    return response.status(500).send("internal server error");
+  }
+});
+
+// READ
+app.get("/purchaseList", (request, response) => {
+  try {
+    return response.status(201).send(globalProductListDatabase);
+  } catch (error) {
+    return response.status(500).send("internal server error");
   }
 });
 
@@ -31,7 +42,7 @@ app.get("/purchaseList/:id", (request, response) => {
   const paramsId: number = parseInt(request.params.id);
   console.log(paramsId);
 
-  const product = productList.find((product) => {
+  const product = globalProductListDatabase.find((product) => {
     if (product.id === paramsId) {
       return product;
     } else {
@@ -44,28 +55,70 @@ app.get("/purchaseList/:id", (request, response) => {
   return response.status(200).send(product);
 });
 
-app.post("/purchaseList/create", (request: Request, response: Response) => {
-  try {
-    const productListBody = request.body;
+// DELETE
+// app.delete("/purchaseList/:id/:itemName", (request, response) => {
+//   const { id: paramsId, itemName: paramsItemName } = request.params;
 
-    const newProductList: iProductList = {
-      id: idCount,
-      listName: productListBody.listName,
-      data: productListBody.data,
-    };
+//   const selectedProductList = productLists.find((product) => {
+//     if (product.id === parseInt(paramsId)) {
+//       return product;
+//     }
+//     return response.status(404).send({
+//       message: `List with Id '${paramsId}' does not exist`,
+//     });
+//   });
 
-    console.log(productListBody);
+//   const newProductData = selectedProductList?.data.filter((item) => {
+//     console.log(item.name)
+//     console.log(paramsItemName)
+//     if (item.name !== paramsItemName) {
+//       return item;
+//     }
+//   });
 
-    productList.push(newProductList);
-    idCount++;
+//   console.log(newProductData)
 
-    return response.status(201).send(newProductList);
-  } catch (error) {
-    return response.send("Algo deu errado");
+//   productLists.filter((product) => {
+//     if (product.id === selectedProductList?.id) {
+//       console.log(product.data)
+//       console.log(selectedProductList.data)
+//       console.log(paramsItemName)
+//       if (product.data === selectedProductList.data) {
+//         return response.status(404).send({
+//           message: `Item with name '${paramsItemName}' does not exist`,
+//         });
+//       }
+
+//       return selectedProductList;
+//     }
+//     return product;
+//   });
+
+//   return response.status(204);
+// });
+
+app.delete("/purchaseList/:id", (request, response: Response) => {
+  const paramsId = request.params.id;
+
+  let productHasBeenDeleted: boolean = false;
+
+  globalProductListDatabase.forEach((product, index) => {
+    if (product.id === parseInt(paramsId)) {
+      globalProductListDatabase.splice(index, 1);
+      productHasBeenDeleted = true;
+    }
+  });
+
+  if (productHasBeenDeleted) {
+    return response.status(204).send({});
   }
+
+  return response.status(404).send({
+    message: `List with Id '${paramsId}' does not exist`,
+  });
 });
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
-  console.log(productList);
+  console.log("//----------------------//");
 });
