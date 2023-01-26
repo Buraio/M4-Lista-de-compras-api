@@ -56,60 +56,53 @@ app.get("/purchaseList/:id", (request, response) => {
 });
 
 // DELETE
-// app.delete("/purchaseList/:id/:itemName", (request, response) => {
-//   const { id: paramsId, itemName: paramsItemName } = request.params;
+app.delete("/purchaseList/:id/:itemName", (request, response) => {
+  const { id: paramsId, itemName: paramsItemName } = request.params;
 
-//   const selectedProductList = productLists.find((product) => {
-//     if (product.id === parseInt(paramsId)) {
-//       return product;
-//     }
-//     return response.status(404).send({
-//       message: `List with Id '${paramsId}' does not exist`,
-//     });
-//   });
+  let idExists: boolean = false;
+  let productHasBeenDeleted: boolean = false;
 
-//   const newProductData = selectedProductList?.data.filter((item) => {
-//     console.log(item.name)
-//     console.log(paramsItemName)
-//     if (item.name !== paramsItemName) {
-//       return item;
-//     }
-//   });
+  globalProductListDatabase.forEach((product) => {
+    if (product.id === Number(paramsId)) {
+      idExists = true;
 
-//   console.log(newProductData)
+      product.data.forEach((item, index) => {
+        if (item.name === paramsItemName) {
+          product.data.splice(index, 1);
+          productHasBeenDeleted = true;
+        }
+      });
+    }
+  });
 
-//   productLists.filter((product) => {
-//     if (product.id === selectedProductList?.id) {
-//       console.log(product.data)
-//       console.log(selectedProductList.data)
-//       console.log(paramsItemName)
-//       if (product.data === selectedProductList.data) {
-//         return response.status(404).send({
-//           message: `Item with name '${paramsItemName}' does not exist`,
-//         });
-//       }
+  if (idExists) {
+    if (productHasBeenDeleted) {
+      return response.status(204).send({});
+    }
 
-//       return selectedProductList;
-//     }
-//     return product;
-//   });
+    return response.status(404).send({
+      message: `Item with name ${paramsItemName} does not exist`,
+    });
+  }
 
-//   return response.status(204);
-// });
+  return response.status(404).send({
+    message: `List with id ${paramsId} does not exist`,
+  });
+});
 
 app.delete("/purchaseList/:id", (request, response: Response) => {
   const paramsId = request.params.id;
 
-  let productHasBeenDeleted: boolean = false;
+  let listHasBeenDeleted: boolean = false;
 
   globalProductListDatabase.forEach((product, index) => {
     if (product.id === parseInt(paramsId)) {
       globalProductListDatabase.splice(index, 1);
-      productHasBeenDeleted = true;
+      listHasBeenDeleted = true;
     }
   });
 
-  if (productHasBeenDeleted) {
+  if (listHasBeenDeleted) {
     return response.status(204).send({});
   }
 
