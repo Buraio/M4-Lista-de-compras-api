@@ -8,6 +8,7 @@ import {
   updateListItem,
 } from "./apiLogic";
 import {
+  ensureCreateRequestIsOk,
   ensureProductListExists,
   ensureUpdateRequestIsOk,
 } from "./middlewares";
@@ -17,7 +18,7 @@ const port: number = 3000;
 
 app.use(express.json());
 
-app.post("/purchaseList/create", createNewList);
+app.post("/purchaseList/create", ensureCreateRequestIsOk, createNewList);
 
 app.get("/purchaseList", readAllLists);
 app.get("/purchaseList/:id", ensureProductListExists, readOneListById);
