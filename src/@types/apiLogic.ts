@@ -54,7 +54,6 @@ export const updateListItem = (request: Request, response: Response) => {
 
   const selectedList = globalProductListDatabase.find((product) => {
     if (product.id === Number(paramsId)) {
-      console.log(product.data.keys());
       product.data.forEach((item) => {
           if (item.name === paramsItemName) {
           item.name = itemName;

@@ -34,14 +34,8 @@ export const ensureCreateRequestIsOk = (
   const requestData = request.body.data;
 
   const requestValues = Object.values(request.body);
-  console.log(requestValues)
   const validateTypes = requestValues.every((key) => {
-    console.log(key)
     if (typeof key !== "string" || !Array.isArray(key)) {
-      console.log('pão')
-      // return response.status(400).json({
-      //   message: `Properties 'listName', 'name' and 'quantity' need to be a string`,
-      // })
     }
   });
 
@@ -54,11 +48,10 @@ export const ensureCreateRequestIsOk = (
   const validateDataKeys = requestData.every((product: iProduct) => {
     const requestItemKeys = Object.keys(product);
     const validation = requiredDataKeys.every((key) => {
-        if (requestItemKeys.includes(key)) {
-          return requestItemKeys.length === requiredDataKeys.length;
-        }
+      if (requestItemKeys.includes(key)) {
+        return requestItemKeys.length === requiredDataKeys.length;
       }
-    );
+    });
 
     return validation;
   });
