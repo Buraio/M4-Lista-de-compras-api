@@ -39,5 +39,4 @@ app.delete("/purchaseList/:id", ensureProductListExists, deleteList);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
-  console.log("//----------------------//");
 });
