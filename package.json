@@ -14,6 +14,6 @@
     "typescript": "^4.9.4"
   },
   "scripts": {
-    "dev": "ts-node-dev --cls --rs --ignore-watch node_modules src/@types/app.ts"
+    "dev": "ts-node-dev --cls --rs --ignore-watch node_modules src/app.ts"
   }
 }
