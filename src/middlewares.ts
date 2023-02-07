@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { globalProductListDatabase } from "./apiLogic";
-import { iProduct, requiredDataKeys, requiredKeys } from "./types";
+import { iProduct, requiredDataKeys, requiredKeys } from "./@types/types";
+import { findProductById } from "./functions";
 
 const requiredKeys: requiredKeys = ["listName", "data"];
 const requiredDataKeys: requiredDataKeys = ["name", "quantity"];
@@ -10,7 +11,7 @@ export const ensureProductListExists = (
   response: Response,
   next: NextFunction
 ): Response | void => {
-  const paramsId: number = Number(request.params.id);
+  const paramsId: number = parseInt(request.params.id);
 
   const productListId = globalProductListDatabase.findIndex(
     (product) => product.id === paramsId
@@ -34,10 +35,24 @@ export const ensureCreateRequestIsOk = (
   const requestData = request.body.data;
 
   const requestValues = Object.values(request.body);
-  const validateTypes = requestValues.every((key) => {
-    if (typeof key !== "string" || !Array.isArray(key)) {
+  const validateTypes = requestValues.every((value, index) => {
+    if (requestKeys[index] === "data") {
+      if (!Array.isArray(value)) {
+        return false;
+      }
+    } else if (typeof value !== "string") {
+      return false;
     }
+
+    return true;
   });
+
+  if (!validateTypes) {
+    return response.status(400).json({
+      message:
+        "Error: data property must be an array, while the other properties must have type string",
+    });
+  }
 
   const validateKeys = requiredKeys.every((key) => {
     if (requestKeys.includes(key)) {
@@ -82,19 +97,14 @@ export const ensureUpdateRequestIsOk = (
     });
   }
 
-  const { id: paramsId, itemName: paramsItemName } = request.params;
+  const paramsId: number = parseInt(request.params.id);
+  const paramsItemName: string = request.params.itemName;
 
-  const findProductItem = globalProductListDatabase.find((product) => {
-    if (product.id === Number(paramsId)) {
-      const productItem = product.data.find((item) => {
-        if (item.name === paramsItemName) {
-          return item;
-        }
-      });
+  const selectedList = findProductById(globalProductListDatabase, paramsId);
 
-      return productItem;
-    }
-  });
+  const findProductItem = selectedList?.data.find(
+    (item) => item.name === paramsItemName
+  );
 
   if (!findProductItem) {
     return response.status(404).send({
